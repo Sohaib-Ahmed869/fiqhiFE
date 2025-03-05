@@ -3,7 +3,7 @@ import axios from "axios";
 
 // Create axios instance with default config
 const api = axios.create({
-  baseURL: "http://localhost:5000/api",
+  baseURL: "https://fiqhibackend.onrender.com/api",
   headers: {
     "Content-Type": "application/json",
   },
