@@ -42,8 +42,6 @@ const SignUp = () => {
 
       if (success === true) {
         navigate("/login"); // Redirect to login after successful registration
-      } else {
-        toast.error("Registration failed. Please try again.");
       }
     } catch (err) {
       setError(err.message || "Registration failed. Please try again.");
