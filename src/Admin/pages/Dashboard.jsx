@@ -270,7 +270,7 @@ const AdminDashboard = () => {
                       Client: {meeting.client}
                     </p>
                     <p className="text-xs text-gray-500">
-                      Case ID: {ConvertIDtoSmallID(meeting.caseID)}
+                      Case ID: {ConvertIDtoSmallID(meeting?.caseID)}
                     </p>
                   </div>
 

@@ -3,7 +3,7 @@ const ConvertIDtoSmallID = (id) => {
   //convert the id to a smaller id
   // return the smaller id
 
-  let smallID = id.slice(0, 5);
+  let smallID = id?.slice(0, 5);
   return smallID;
 };
 
