@@ -20,18 +20,273 @@ const FieldGroup = ({ label, value }) => (
   </div>
 );
 
-const DownloadCertificate = ({ certificateFile }) => (
-  <div className="mt-8">
-    <img src={certificate} alt="Certificate" className="w-full" />
-    <a
-      href={`/uploads/certificates/${certificateFile}`}
-      download
-      className="w-full px-4 py-2 bg-green-700 text-white rounded-lg hover:bg-green-800 mt-5 inline-block text-center"
-    >
-      Download Certificate
-    </a>
-  </div>
-);
+// Replace the existing DownloadCertificate component with this enhanced version
+const DownloadCertificate = ({ marriage }) => {
+  console.log(marriage);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  const generateAndDownloadCertificate = async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      // Import libraries dynamically
+      const { jsPDF } = await import("jspdf");
+
+      // Initialize the PDF document (landscape)
+      const doc = new jsPDF({
+        orientation: "landscape",
+        unit: "mm",
+        format: "a4",
+      });
+
+      // Set page background color (slight cream)
+      doc.setFillColor(252, 252, 250);
+      doc.rect(
+        0,
+        0,
+        doc.internal.pageSize.width,
+        doc.internal.pageSize.height,
+        "F"
+      );
+
+      // Add border
+      doc.setDrawColor(44, 62, 80);
+      doc.setLineWidth(1);
+      doc.rect(
+        10,
+        10,
+        doc.internal.pageSize.width - 20,
+        doc.internal.pageSize.height - 20,
+        "S"
+      );
+
+      // Add title with proper styling
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(28);
+      doc.setTextColor(44, 62, 80);
+      doc.text(
+        "ISLAMIC MARRIAGE CERTIFICATE",
+        doc.internal.pageSize.width / 2,
+        30,
+        { align: "center" }
+      );
+
+      // Add certificate number and date
+      doc.setFontSize(12);
+      doc.setFont("helvetica", "normal");
+      doc.text(
+        `Certificate No: ${marriage.certificateNumber}`,
+        doc.internal.pageSize.width / 2,
+        40,
+        { align: "center" }
+      );
+      doc.text(
+        `Issue Date: ${format(
+          new Date(marriage.certificateIssuedDate || new Date()),
+          "MMMM d, yyyy"
+        )}`,
+        doc.internal.pageSize.width / 2,
+        47,
+        { align: "center" }
+      );
+
+      // Add decorative line
+      doc.setDrawColor(44, 62, 80);
+      doc.setLineWidth(0.5);
+      doc.line(50, 70, doc.internal.pageSize.width - 50, 70);
+
+      // Certificate content
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(14);
+      doc.setTextColor(44, 62, 80);
+      doc.text("This is to certify that", doc.internal.pageSize.width / 2, 85, {
+        align: "center",
+      });
+
+      // Partner names
+      doc.setFontSize(18);
+      doc.setFont("helvetica", "bold");
+      doc.text(
+        `${marriage.partnerOne.firstName} ${marriage.partnerOne.lastName}`,
+        doc.internal.pageSize.width / 2,
+        100,
+        { align: "center" }
+      );
+
+      doc.setFontSize(14);
+      doc.setFont("helvetica", "normal");
+      doc.text("and", doc.internal.pageSize.width / 2, 110, {
+        align: "center",
+      });
+
+      doc.setFontSize(18);
+      doc.setFont("helvetica", "bold");
+      doc.text(
+        `${marriage.partnerTwo.firstName} ${marriage.partnerTwo.lastName}`,
+        doc.internal.pageSize.width / 2,
+        120,
+        { align: "center" }
+      );
+
+      // Marriage details
+      doc.setFontSize(14);
+      doc.setFont("helvetica", "normal");
+      doc.text(
+        "have been lawfully married according to Islamic Law (Shariah)",
+        doc.internal.pageSize.width / 2,
+        135,
+        { align: "center" }
+      );
+      doc.text(
+        `on ${format(new Date(marriage.marriageDate), "MMMM d, yyyy")}`,
+        doc.internal.pageSize.width / 2,
+        145,
+        { align: "center" }
+      );
+      doc.text(
+        `at ${marriage.marriagePlace}`,
+        doc.internal.pageSize.width / 2,
+        155,
+        { align: "center" }
+      );
+
+      // Officiant (Shaykh) section
+      doc.setFontSize(14);
+      doc.setFont("helvetica", "bold");
+      doc.text("OFFICIATED BY", doc.internal.pageSize.width / 2, 165, {
+        align: "center",
+      });
+
+      doc.setFontSize(12);
+      doc.setFont("helvetica", "normal");
+      doc.text(
+        `${marriage.assignedShaykh.firstName} ${marriage.assignedShaykh.lastName}`,
+        doc.internal.pageSize.width / 2,
+        175,
+        { align: "center" }
+      );
+
+      // Add another decorative line
+      doc.setLineWidth(0.5);
+      doc.line(50, 215, doc.internal.pageSize.width - 50, 215);
+
+      // Add signature lines
+      const signatureY = 230;
+
+      // Shaykh signature
+      doc.line(70, signatureY, 120, signatureY);
+      doc.text("Shaykh Signature", 95, signatureY + 7, { align: "center" });
+
+      // Official seal
+      doc.line(
+        doc.internal.pageSize.width - 120,
+        signatureY,
+        doc.internal.pageSize.width - 70,
+        signatureY
+      );
+      doc.text(
+        "Official Seal",
+        doc.internal.pageSize.width - 95,
+        signatureY + 7,
+        { align: "center" }
+      );
+
+      // Add footer
+      const footerY = doc.internal.pageSize.height - 20;
+
+      doc.setFontSize(10);
+      doc.text(
+        "This certificate is an official document recognized by our Islamic institution.",
+        doc.internal.pageSize.width / 2,
+        footerY,
+        { align: "center" }
+      );
+      doc.text(
+        "May Allah bless this union and grant the couple happiness and prosperity.",
+        doc.internal.pageSize.width / 2,
+        footerY + 5,
+        { align: "center" }
+      );
+
+      // Save the PDF with a specific name
+      doc.save(`marriage-certificate-${marriage?.certificateNumber}.pdf`);
+    } catch (err) {
+      console.error("Error generating certificate:", err);
+      setError("Failed to generate certificate. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <div className="mt-8">
+      <div className="bg-white border border-gray-200 rounded-lg p-4">
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h4 className="font-medium text-gray-900">Marriage Certificate</h4>
+            <p className="text-sm text-gray-600">
+              {marriage?.certificateNumber
+                ? `Certificate #${marriage.certificateNumber}`
+                : "Your certificate is ready"}
+            </p>
+          </div>
+          <img src={certificate} alt="Certificate" className="h-16" />
+        </div>
+        <button
+          onClick={generateAndDownloadCertificate}
+          disabled={isLoading}
+          className="w-full px-4 py-2 bg-green-700 text-white rounded-lg hover:bg-green-800 flex items-center justify-center gap-2"
+        >
+          {isLoading ? (
+            <>
+              <svg
+                className="animate-spin h-5 w-5 text-white"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                ></circle>
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                ></path>
+              </svg>
+              <span>Generating...</span>
+            </>
+          ) : (
+            <>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-5 w-5"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+                />
+              </svg>
+              <span>Download Certificate</span>
+            </>
+          )}
+        </button>
+        {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
+      </div>
+    </div>
+  );
+};
 
 const TimelineEntry = ({ date, title }) => (
   <div className="flex items-start gap-3 mb-4">
@@ -508,10 +763,16 @@ const MarriageApplicationView = () => {
     ["assigned", "in-progress"].includes(marriage.status) &&
     (!marriage.meetings || marriage.meetings.length === 0);
 
+  // Update the showCertificate condition
   const showCertificate =
     marriage.status === "completed" &&
     marriage.type === "certificate" &&
-    marriage.certificateFile;
+    (marriage.certificateFile || marriage.certificate_generated);
+
+  // And update where it's used
+  {
+    showCertificate && <DownloadCertificate marriage={marriage} />;
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 lg:p-8">
@@ -800,7 +1061,7 @@ const MarriageApplicationView = () => {
                       </span>
                     </div>
                   )}
-                  {marriage.certificateNumber && (
+                  {/* {marriage?.certificateNumber && (
                     <div>
                       <span className="text-sm text-gray-500">
                         Certificate Number:{" "}
@@ -809,13 +1070,11 @@ const MarriageApplicationView = () => {
                         {marriage.certificateNumber}
                       </span>
                     </div>
-                  )}
+                  )} */}
                 </div>
 
                 {showCertificate && (
-                  <DownloadCertificate
-                    certificateFile={marriage.certificateFile}
-                  />
+                  <DownloadCertificate marriage={marriage} className="mt-6" />
                 )}
 
                 <Timeline marriage={marriage} />

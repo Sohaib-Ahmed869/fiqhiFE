@@ -5,6 +5,7 @@ import logo from "../../../assets/logo.png";
 import marriageService from "../../services/marriageServices";
 import { format } from "date-fns";
 import AddMarriageModal from "./AddMarriageModal";
+import ConvertIDtoSmallID from "../../../utils/IDconversion";
 
 const TabButton = ({ active, children, onClick }) => (
   <button
@@ -372,7 +373,7 @@ const MarriageQueries = () => {
                           />
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {marriage._id}
+                          {ConvertIDtoSmallID(marriage._id)}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                           {marriage.type === "reservation"

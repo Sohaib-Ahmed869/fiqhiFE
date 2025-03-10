@@ -128,13 +128,13 @@ const Sidebar = ({ mobile = false, closeSidebar }) => {
               onClick="/user/fatwa-queries"
             />
           </div>
-
+{/* 
           <MenuItem
             icon={<Bell className="w-5 h-5" />}
             label="Notifications"
             active={location.pathname.includes("/user/notifications")}
             onClick="/user/notifications"
-          />
+          /> */}
 
           <MenuItem
             icon={<Settings className="w-5 h-5" />}

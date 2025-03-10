@@ -13,12 +13,12 @@ const ScheduleHeader = ({ date, onPrevMonth, onNextMonth }) => (
       <h1 className="text-2xl font-semibold text-gray-900">Schedule</h1>
       <p className="text-gray-500">Manage your appointments and meetings</p>
     </div>
-    <div className="flex items-center gap-4">
+    {/* <div className="flex items-center gap-4">
       <button className="flex items-center gap-2 px-4 py-2 border rounded-lg hover:bg-gray-50">
         <Download className="w-4 h-4" />
         Export Schedule
       </button>
-    </div>
+    </div> */}
   </div>
 );
 
@@ -224,14 +224,7 @@ const EventDetailsModal = ({ event, onClose }) => {
               Mark as Complete
             </button>
           )}
-          {event.status !== "cancelled" && (
-            <button
-              className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
-              onClick={() => event.onCancel && event.onCancel(event)}
-            >
-              Cancel Meeting
-            </button>
-          )}
+
           <button
             className="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300"
             onClick={onClose}

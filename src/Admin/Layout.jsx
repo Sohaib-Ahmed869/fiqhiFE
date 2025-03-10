@@ -247,34 +247,6 @@ const Header = ({ openSidebar }) => {
               <Menu className="h-6 w-6" />
             </button>
           </div>
-
-          <div className="flex items-center">
-            <div className="flex items-center space-x-4">
-              <button
-                className="p-1 text-gray-400 hover:text-gray-500 relative"
-                onClick={() => {}}
-              >
-                <span className="sr-only">View notifications</span>
-                <Bell className="h-6 w-6" />
-                <span className="absolute top-0 right-0 h-2 w-2 bg-red-500 rounded-full"></span>
-              </button>
-
-              <button
-                className="p-1 text-gray-400 hover:text-gray-500"
-                onClick={() => {}}
-              >
-                <span className="sr-only">Settings</span>
-                <Settings className="h-6 w-6" />
-              </button>
-
-              {/* Mobile profile image */}
-              <img
-                className="h-8 w-8 rounded-full"
-                src={getAvatarUrl()}
-                alt="Profile"
-              />
-            </div>
-          </div>
         </div>
       </div>
     </header>

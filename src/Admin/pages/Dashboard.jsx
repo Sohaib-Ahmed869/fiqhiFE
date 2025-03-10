@@ -383,9 +383,6 @@ const AdminDashboard = () => {
               <h2 className="text-lg font-medium text-gray-900">
                 Recent Activities
               </h2>
-              <a href="#" className="text-sm text-blue-600 hover:text-blue-800">
-                See All Activities →
-              </a>
             </div>
 
             <div className="text-sm text-gray-500 mb-4">
@@ -460,7 +457,7 @@ const AdminDashboard = () => {
                     dataKey="value"
                     paddingAngle={2}
                   >
-                    {activityDistribution.map((entry, index) => (
+                    {activityDistribution?.map((entry, index) => (
                       <Cell
                         key={`cell-${index}`}
                         fill={COLORS[index % COLORS.length]}
@@ -491,27 +488,35 @@ const AdminDashboard = () => {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
             <div className="flex items-center">
               <div className="w-3 h-3 bg-amber-500 rounded-sm mr-2"></div>
-              <span className="text-xs text-gray-600">
-                Marriage Queries ({activityDistribution[0]?.value || 0}%)
-              </span>
+              {activityDistribution && (
+                <span className="text-xs text-gray-600">
+                  Marriage Queries ({activityDistribution[0]?.value || 0}%)
+                </span>
+              )}
             </div>
             <div className="flex items-center">
               <div className="w-3 h-3 bg-blue-800 rounded-sm mr-2"></div>
-              <span className="text-xs text-gray-600">
-                Nikahs ({activityDistribution[1]?.value || 0}%)
-              </span>
+              {activityDistribution?.length > 0 && (
+                <span className="text-xs text-gray-600">
+                  Nikahs ({activityDistribution[1]?.value || 0}%)
+                </span>
+              )}
             </div>
             <div className="flex items-center">
               <div className="w-3 h-3 bg-cyan-500 rounded-sm mr-2"></div>
-              <span className="text-xs text-gray-600">
-                Family Counseling ({activityDistribution[2]?.value || 0}%)
-              </span>
+              {activityDistribution?.length > 1 && (
+                <span className="text-xs text-gray-600">
+                  Family Counseling ({activityDistribution[2]?.value || 0}%)
+                </span>
+              )}
             </div>
             <div className="flex items-center">
               <div className="w-3 h-3 bg-gray-400 rounded-sm mr-2"></div>
-              <span className="text-xs text-gray-600">
-                Fatwa Queries ({activityDistribution[3]?.value || 0}%)
-              </span>
+              {activityDistribution?.length > 2 && (
+                <span className="text-xs text-gray-600">
+                  Fatwa Queries ({activityDistribution[3]?.value || 0}%)
+                </span>
+              )}
             </div>
           </div>
         </div>

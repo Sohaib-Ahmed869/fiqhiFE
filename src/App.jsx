@@ -4,7 +4,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import AuthLayout from "./Auth/authLayout";
 import SignUp from "./Auth/signup";
 import Login from "./Auth/login";
-import ForgotPassword from "./Auth/ForgotPassword"
+import ForgotPassword from "./Auth/ForgotPassword";
 import UserLayout from "./layouts/UserLayout";
 import NewApplication from "./User/pages/NewApplication";
 import FatwaQueries from "./User/pages/FatwaQueries";
@@ -25,7 +25,7 @@ import MarriageApplicationViewS from "./Shaykh/pages/Marriage/details";
 import ShaykhSchedule from "./Shaykh/pages/schedule";
 import NotificationsScreen from "./Shaykh/pages/notifications";
 import UserProfile from "./Shaykh/pages/profile";
-import ResetPassword from "./Auth/ResetPassword"
+import ResetPassword from "./Auth/ResetPassword";
 import AdminLayout from "./Admin/Layout";
 import AddShaykh from "./Admin/pages/AddShaykh";
 import FatwaApplications from "./Admin/pages/Fatwa";
@@ -37,6 +37,9 @@ import AdminReconciliationList from "./Admin/pages/Recon";
 import AdminReconciliationDetail from "./Admin/pages/ReconDetails";
 import AdminDashboard from "./Admin/pages/Dashboard";
 
+import NewFatwaScreen from "./User/pages/newFatwa";
+import NewMarriageScreen from "./User/pages/newMarriage";
+import NewReconciliationScreen from "./User/pages/newReconciliation";
 import { AuthProvider } from "./Contexts/AuthContext";
 import { ToastContainer } from "react-toastify";
 
@@ -51,14 +54,22 @@ function App() {
             <Route path="/signup" element={<SignUp />} />
             <Route path="/login" element={<Login />} />
             <Route path="/forgotpassword" element={<ForgotPassword />} />
-            <Route path="/resetpassword/:resetToken" element={<ResetPassword />} />
-
+            <Route
+              path="/resetpassword/:resetToken"
+              element={<ResetPassword />}
+            />
           </Route>
           <Route path="/user" element={<UserLayout />}>
             <Route path="" element={<NewApplication />} />
             <Route path="new-application" element={<NewApplication />} />
             <Route path="fatwa-queries" element={<FatwaQueries />} />
             <Route path="marriage-queries" element={<MarriageQueries />} />
+            <Route path="new-fatwa" element={<NewFatwaScreen />} />
+            <Route path="new-marriage" element={<NewMarriageScreen />} />
+            <Route
+              path="new-reconciliation"
+              element={<NewReconciliationScreen />}
+            />
             <Route
               path="marriage-queries/:id"
               element={<MarriageApplicationView />}

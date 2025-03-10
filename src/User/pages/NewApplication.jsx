@@ -339,24 +339,25 @@ const NewApplication = () => {
       title: "Islamic Marriage Office",
       arabicTitle: "مكتب الزواج الشرعي",
       icon: s1,
-      to: "/user/marriage-queries",
+      to: "/user/new-marriage", // Updated path to new marriage screen
     },
     {
       title: "Family Reconciliation Office",
       arabicTitle: "مكتب الإصلاح الأسري",
       icon: s2,
-      to: "/user/reconciliation-queries",
+      to: "/user/new-reconciliation", // Updated path to new reconciliation screen
     },
     {
       title: "Islamic Fatawa Centre",
       arabicTitle: "مركز الفتاوى الشرعية",
       icon: s3,
-      to: "/user/fatwa-queries",
+      to: "/user/new-fatwa", // Updated path to new fatwa screen
     },
     {
       title: "Islamic and Arabic Education Centre",
       arabicTitle: "مركز العلوم الشرعية والعربية",
       icon: s4,
+      to: "#", // Placeholder path for the education center (not implemented yet)
     },
   ];
 

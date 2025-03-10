@@ -109,7 +109,10 @@ export const marriageService = {
    * @returns {Promise} - API response
    */
   getCertificateUrl: async (id) => {
-    return await api.get(`/marriages/certificate-url/${id}`);
+    const response = await api.get(`/marriages/certificate-url/${id}`);
+    // Modify the URL to point to your backend server
+    response.data.downloadUrl = `https://fiqhi-fe.vercel.app${response.data.downloadUrl}`;
+    return response;
   },
 
   /**
@@ -140,6 +143,10 @@ export const marriageService = {
    */
   cancelMarriage: async (id, data = {}) => {
     return await api.put(`/marriages/cancel/${id}`, data);
+  },
+
+  generateCertificate: async (id, data) => {
+    return api.post(`/marriages/generate-certificate/${id}`, data);
   },
 };
 

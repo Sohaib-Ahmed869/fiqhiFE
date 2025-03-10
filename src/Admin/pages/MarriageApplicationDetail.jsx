@@ -496,66 +496,31 @@ const UpdateMeetingModal = ({ meeting, onClose, onUpdateMeeting }) => {
   );
 };
 
-const UploadCertificateModal = ({ marriage, onClose, onUploadCertificate }) => {
+// Replace the existing UploadCertificateModal with this
+const GenerateCertificateModal = ({
+  marriage,
+  onClose,
+  onGenerateCertificate,
+}) => {
   const [certificateNumber, setCertificateNumber] = useState("");
-  const [file, setFile] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState(0);
   const [error, setError] = useState(null);
-
-  const handleFileChange = (e) => {
-    const selectedFile = e.target.files[0];
-
-    // Validate file type and size
-    const allowedTypes = [
-      "application/pdf",
-      "image/jpeg",
-      "image/jpg",
-      "image/png",
-    ];
-    const maxSize = 10 * 1024 * 1024; // 10MB
-
-    if (selectedFile && !allowedTypes.includes(selectedFile.type)) {
-      setError("Invalid file type. Please upload a PDF, JPG, or PNG file.");
-      setFile(null);
-      return;
-    }
-
-    if (selectedFile && selectedFile.size > maxSize) {
-      setError("File is too large. Maximum size is 10MB.");
-      setFile(null);
-      return;
-    }
-
-    setError(null);
-    setFile(selectedFile);
-  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!file || !certificateNumber) return;
+    if (!certificateNumber) return;
 
     setLoading(true);
     setError(null);
 
-    // Create fresh FormData instance
-    const formData = new FormData();
-
-    // Important: Add the file with the field name matching your multer setup
-    formData.append("certificate", file);
-    formData.append("certificateNumber", certificateNumber);
-
-    console.log("Uploading file:", file.name, file.type, file.size);
-
     try {
-      // Pass the FormData directly - no special configs needed here
-      await onUploadCertificate(formData);
+      await onGenerateCertificate({ certificateNumber });
       onClose();
     } catch (error) {
-      console.error("Error uploading certificate:", error);
+      console.error("Error generating certificate:", error);
       setError(
         error.response?.data?.error ||
-          "Failed to upload certificate. Please try again."
+          "Failed to generate certificate. Please try again."
       );
     } finally {
       setLoading(false);
@@ -567,7 +532,7 @@ const UploadCertificateModal = ({ marriage, onClose, onUploadCertificate }) => {
       <div className="bg-white rounded-lg shadow-xl w-full max-w-lg">
         <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
           <h3 className="text-lg font-medium text-gray-900">
-            Upload Certificate to S3
+            Generate Certificate
           </h3>
           <button
             onClick={onClose}
@@ -605,44 +570,6 @@ const UploadCertificateModal = ({ marriage, onClose, onUploadCertificate }) => {
               />
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Certificate File
-              </label>
-              <div className="flex items-center justify-center w-full">
-                <label className="flex flex-col w-full h-32 border-2 border-dashed border-gray-300 rounded-lg hover:bg-gray-50 cursor-pointer">
-                  <div className="flex flex-col items-center justify-center pt-7">
-                    <FaFileUpload className="w-8 h-8 text-gray-400" />
-                    <p className="pt-1 text-sm text-gray-600">
-                      {file ? file.name : "Upload a certificate file"}
-                    </p>
-                    <p className="text-xs text-gray-500">
-                      PDF, JPG, or PNG up to 10MB
-                    </p>
-                  </div>
-                  <input
-                    type="file"
-                    className="hidden"
-                    accept=".pdf,.jpg,.jpeg,.png"
-                    onChange={handleFileChange}
-                    required
-                  />
-                </label>
-              </div>
-            </div>
-
-            {loading && uploadProgress > 0 && (
-              <div className="w-full bg-gray-200 rounded-full h-2.5">
-                <div
-                  className="bg-primary-600 h-2.5 rounded-full"
-                  style={{ width: `${uploadProgress}%` }}
-                ></div>
-                <p className="text-xs text-gray-500 mt-1 text-right">
-                  {uploadProgress}% uploaded
-                </p>
-              </div>
-            )}
-
             {error && (
               <div className="p-3 bg-red-50 border border-red-200 rounded-md text-red-700 text-sm">
                 {error}
@@ -661,9 +588,9 @@ const UploadCertificateModal = ({ marriage, onClose, onUploadCertificate }) => {
             <button
               type="submit"
               className="px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
-              disabled={!file || !certificateNumber || loading}
+              disabled={!certificateNumber || loading}
             >
-              {loading ? "Uploading..." : "Upload Certificate"}
+              {loading ? "Generating..." : "Generate Certificate"}
             </button>
           </div>
         </form>
@@ -671,7 +598,6 @@ const UploadCertificateModal = ({ marriage, onClose, onUploadCertificate }) => {
     </div>
   );
 };
-
 const CompleteApplicationModal = ({ marriage, onClose, onComplete }) => {
   const [notes, setNotes] = useState("");
   const [loading, setLoading] = useState(false);
@@ -1054,23 +980,199 @@ const MeetingsList = ({ meetings, onUpdateMeeting }) => {
   );
 };
 
+// Modify CertificateView component
 const CertificateView = ({ marriage }) => {
-  const [downloadUrl, setDownloadUrl] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const getCertificateUrl = async () => {
+  const generateAndDownloadCertificate = async () => {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await marriageService.getCertificateUrl(marriage._id);
-      setDownloadUrl(response.data.downloadUrl);
+      // Import libraries dynamically
+      const { jsPDF } = await import("jspdf");
 
-      // Open the URL in a new tab
-      window.open(response.data.downloadUrl, "_blank");
+      // Initialize the PDF document (landscape)
+      const doc = new jsPDF({
+        orientation: "landscape",
+        unit: "mm",
+        format: "a4",
+      });
+
+      // Set page background color (slight cream)
+      doc.setFillColor(252, 252, 250);
+      doc.rect(
+        0,
+        0,
+        doc.internal.pageSize.width,
+        doc.internal.pageSize.height,
+        "F"
+      );
+
+      // Add border
+      doc.setDrawColor(44, 62, 80);
+      doc.setLineWidth(1);
+      doc.rect(
+        10,
+        10,
+        doc.internal.pageSize.width - 20,
+        doc.internal.pageSize.height - 20,
+        "S"
+      );
+
+      // Add title with proper styling
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(28);
+      doc.setTextColor(44, 62, 80);
+      doc.text(
+        "ISLAMIC MARRIAGE CERTIFICATE",
+        doc.internal.pageSize.width / 2,
+        30,
+        { align: "center" }
+      );
+
+      // Add certificate number and date
+      doc.setFontSize(12);
+      doc.setFont("helvetica", "normal");
+      doc.text(
+        `Certificate No: ${marriage.certificateNumber}`,
+        doc.internal.pageSize.width / 2,
+        40,
+        { align: "center" }
+      );
+      doc.text(
+        `Issue Date: ${format(
+          new Date(marriage.certificateIssuedDate || new Date()),
+          "MMMM d, yyyy"
+        )}`,
+        doc.internal.pageSize.width / 2,
+        47,
+        { align: "center" }
+      );
+
+      // Add decorative line
+      doc.setDrawColor(44, 62, 80);
+      doc.setLineWidth(0.5);
+      doc.line(50, 70, doc.internal.pageSize.width - 50, 70);
+
+      // Certificate content
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(14);
+      doc.setTextColor(44, 62, 80);
+      doc.text("This is to certify that", doc.internal.pageSize.width / 2, 85, {
+        align: "center",
+      });
+
+      // Partner names
+      doc.setFontSize(18);
+      doc.setFont("helvetica", "bold");
+      doc.text(
+        `${marriage.partnerOne.firstName} ${marriage.partnerOne.lastName}`,
+        doc.internal.pageSize.width / 2,
+        100,
+        { align: "center" }
+      );
+
+      doc.setFontSize(14);
+      doc.setFont("helvetica", "normal");
+      doc.text("and", doc.internal.pageSize.width / 2, 110, {
+        align: "center",
+      });
+
+      doc.setFontSize(18);
+      doc.setFont("helvetica", "bold");
+      doc.text(
+        `${marriage.partnerTwo.firstName} ${marriage.partnerTwo.lastName}`,
+        doc.internal.pageSize.width / 2,
+        120,
+        { align: "center" }
+      );
+
+      // Marriage details
+      doc.setFontSize(14);
+      doc.setFont("helvetica", "normal");
+      doc.text(
+        "have been lawfully married according to Islamic Law (Shariah)",
+        doc.internal.pageSize.width / 2,
+        135,
+        { align: "center" }
+      );
+      doc.text(
+        `on ${format(new Date(marriage.marriageDate), "MMMM d, yyyy")}`,
+        doc.internal.pageSize.width / 2,
+        145,
+        { align: "center" }
+      );
+      doc.text(
+        `at ${marriage.marriagePlace}`,
+        doc.internal.pageSize.width / 2,
+        155,
+        { align: "center" }
+      );
+
+      // Officiant (Shaykh) section
+      doc.setFontSize(14);
+      doc.setFont("helvetica", "bold");
+      doc.text("OFFICIATED BY", doc.internal.pageSize.width / 2, 165, {
+        align: "center",
+      });
+
+      doc.setFontSize(12);
+      doc.setFont("helvetica", "normal");
+      doc.text(
+        `${marriage.assignedShaykh.firstName} ${marriage.assignedShaykh.lastName}`,
+        doc.internal.pageSize.width / 2,
+        175,
+        { align: "center" }
+      );
+
+      // Add another decorative line
+      doc.setLineWidth(0.5);
+      doc.line(50, 215, doc.internal.pageSize.width - 50, 215);
+
+      // Add signature lines
+      const signatureY = 230;
+
+      // Shaykh signature
+      doc.line(70, signatureY, 120, signatureY);
+      doc.text("Shaykh Signature", 95, signatureY + 7, { align: "center" });
+
+      // Official seal
+      doc.line(
+        doc.internal.pageSize.width - 120,
+        signatureY,
+        doc.internal.pageSize.width - 70,
+        signatureY
+      );
+      doc.text(
+        "Official Seal",
+        doc.internal.pageSize.width - 95,
+        signatureY + 7,
+        { align: "center" }
+      );
+
+      // Add footer
+      const footerY = doc.internal.pageSize.height - 20;
+
+      doc.setFontSize(10);
+      doc.text(
+        "This certificate is an official document recognized by our Islamic institution.",
+        doc.internal.pageSize.width / 2,
+        footerY,
+        { align: "center" }
+      );
+      doc.text(
+        "May Allah bless this union and grant the couple happiness and prosperity.",
+        doc.internal.pageSize.width / 2,
+        footerY + 5,
+        { align: "center" }
+      );
+
+      // Save the PDF with a specific name
+      doc.save(`marriage-certificate-${marriage.certificateNumber}.pdf`);
     } catch (err) {
-      console.error("Error getting certificate URL:", err);
-      setError("Failed to get download link. Please try again.");
+      console.error("Error generating certificate:", err);
+      setError("Failed to generate certificate. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -1082,11 +1184,11 @@ const CertificateView = ({ marriage }) => {
         <h3 className="text-lg font-medium text-gray-900">Certificate</h3>
       </div>
 
-      {marriage.certificateFile ? (
+      {marriage.certificate_generated ? (
         <div className="mt-4">
           <div className="p-4 border border-green-200 rounded-lg bg-green-50 text-green-800 flex justify-between items-center">
             <div>
-              <p className="font-medium">Certificate has been uploaded</p>
+              <p className="font-medium">Certificate has been generated</p>
               <p className="text-sm mt-1">
                 Certificate Number: {marriage.certificateNumber}
               </p>
@@ -1099,20 +1201,20 @@ const CertificateView = ({ marriage }) => {
               </p>
             </div>
             <button
-              onClick={getCertificateUrl}
+              onClick={generateAndDownloadCertificate}
               disabled={isLoading}
               className="px-3 py-1.5 bg-green-600 text-white rounded-md hover:bg-green-700 text-sm disabled:opacity-50"
             >
-              {isLoading ? "Loading..." : "Download"}
+              {isLoading ? "Generating..." : "Download"}
             </button>
           </div>
           {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
         </div>
       ) : (
         <div className="mt-4 p-4 border border-yellow-200 rounded-lg bg-yellow-50 text-yellow-800">
-          <p className="font-medium">No certificate has been uploaded yet</p>
+          <p className="font-medium">No certificate has been generated yet</p>
           <p className="text-sm mt-1">
-            The certificate needs to be uploaded to complete this application.
+            A certificate needs to be generated to complete this application.
           </p>
         </div>
       )}
@@ -1230,6 +1332,50 @@ const AdminMarriageView = () => {
       throw error;
     }
   };
+
+  // Add this function to the AdminMarriageView component
+  const handleGenerateCertificate = async (data) => {
+    try {
+      // Call the backend to update the certificate information only
+      const response = await marriageService.generateCertificate(
+        marriage._id,
+        data
+      );
+      setMarriage(response.data.marriage);
+      return response;
+    } catch (error) {
+      console.error("Error generating certificate:", error);
+      throw error;
+    }
+  };
+
+  // Replace canUploadCertificate check with canGenerateCertificate
+  const canGenerateCertificate =
+    marriage?.type === "certificate" &&
+    marriage.assignedShaykh &&
+    ["assigned", "in-progress"].includes(marriage.status) &&
+    !marriage.certificate_generated;
+
+  {
+    canGenerateCertificate && (
+      <button
+        onClick={() => setIsUploadModalOpen(true)}
+        className="inline-flex items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700"
+      >
+        <FaFileUpload className="mr-1.5 h-4 w-4" />
+        Generate Certificate
+      </button>
+    );
+  }
+  {
+    isUploadModalOpen && (
+      <GenerateCertificateModal
+        marriage={marriage}
+        onClose={() => setIsUploadModalOpen(false)}
+        onGenerateCertificate={handleGenerateCertificate} // Change from onUpload to onGenerateCertificate
+      />
+    );
+  }
 
   const handleCompleteApplication = async (data) => {
     try {
@@ -1797,10 +1943,10 @@ const AdminMarriageView = () => {
       )}
 
       {isUploadModalOpen && (
-        <UploadCertificateModal
+        <GenerateCertificateModal
           marriage={marriage}
           onClose={() => setIsUploadModalOpen(false)}
-          onUploadCertificate={handleUploadCertificate}
+          onGenerateCertificate={handleGenerateCertificate} // This is correct
         />
       )}
 
