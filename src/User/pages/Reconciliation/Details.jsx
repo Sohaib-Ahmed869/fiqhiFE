@@ -120,9 +120,11 @@ const ScheduleMeetingModal = ({
               name="date"
               value={formData.date}
               onChange={handleChange}
+              min={new Date().toISOString().split("T")[0]} 
               className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors"
               required
             />
+
           </div>
 
           <div>
@@ -903,25 +905,24 @@ const IntegratedReconciliationDetail = () => {
   // Determine if user can cancel the reconciliation
   const canCancelReconciliation = () => {
     if (!reconciliation || !currentUser) return false;
-
+  
     // Only admin or the user who created it can cancel
-    if (
-      currentUser.role !== "admin" &&
-      reconciliation.user._id !== currentUser._id
-    ) {
+    if (currentUser.role !== "admin" && reconciliation.user._id !== currentUser._id) {
       return false;
     }
-
-    // Cannot cancel if already completed
+  
+    // Cannot cancel if already completed or cancelled
     if (
       reconciliation.status === "resolved" ||
-      reconciliation.status === "unresolved"
+      reconciliation.status === "unresolved" ||
+      reconciliation.status === "cancelled"
     ) {
       return false;
     }
-
+  
     return true;
   };
+  
 
   // Determine if user can add shaykh notes
   const canAddShaykhNotes = () => {

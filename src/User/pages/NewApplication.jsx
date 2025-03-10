@@ -257,7 +257,7 @@ const QueryProgressCard = () => {
       nextStep,
       nextStepDescription,
       actionText: progress < totalSteps ? "Check Status" : "View Answer",
-      actionLink: `/user/fatwa-queries/${fatwa._id}`,
+      actionLink: `/user/fatwa-queries`,
     };
   };
 

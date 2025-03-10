@@ -234,43 +234,56 @@ const PasswordModal = ({ onClose }) => {
   const [alert, setAlert] = useState(null);
 
   const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Validate passwords match
+    // Validate that new passwords match
     if (formData.newPassword !== formData.confirmPassword) {
       setAlert({ type: "error", message: "New passwords do not match" });
+      return;
+    }
+
+    // Validate that passwords are not empty
+    if (!formData.currentPassword || !formData.newPassword) {
+      setAlert({ type: "error", message: "All password fields are required" });
       return;
     }
 
     setLoading(true);
 
     try {
-      await api.put("/users/password", {
+      // Debug what's being sent
+      console.log("Sending password update:", {
         currentPassword: formData.currentPassword,
         newPassword: formData.newPassword,
       });
 
-      setAlert({ type: "success", message: "Password changed successfully" });
+      const response = await api.put("/users/password", {
+        currentPassword: formData.currentPassword,
+        newPassword: formData.newPassword,
+      });
 
-      // Reset form
+      console.log("Password update response:", response);
+
+      setAlert({ type: "success", message: "Password changed successfully" });
+      
+      // Reset the form
       setFormData({
         currentPassword: "",
         newPassword: "",
         confirmPassword: "",
       });
-
-      // Close modal after 1 second
+      
+      // Close modal after a short delay
       setTimeout(() => {
         onClose();
       }, 1000);
     } catch (err) {
+      console.error("Password change error:", err);
       setAlert({
         type: "error",
         message: err.response?.data?.error || "Error changing password",
@@ -280,61 +293,92 @@ const PasswordModal = ({ onClose }) => {
     }
   };
 
-  const PasswordInput = ({ label, name, placeholder }) => (
-    <div>
-      <label className="block text-sm font-medium text-gray-700 mb-1">
-        {label}
-      </label>
-      <div className="relative">
-        <input
-          type={showPassword[name] ? "text" : "password"}
-          name={name}
-          className="w-full px-3 py-2 border border-gray-300 rounded-md pr-10"
-          placeholder={placeholder}
-          value={formData[name]}
-          onChange={handleChange}
-          required
-        />
-        <button
-          type="button"
-          onClick={() =>
-            setShowPassword((prev) => ({ ...prev, [name]: !prev[name] }))
-          }
-          className="absolute right-3 top-2.5 text-gray-400 hover:text-gray-600"
-        >
-          {showPassword[name] ? (
-            <EyeOff className="w-5 h-5" />
-          ) : (
-            <Eye className="w-5 h-5" />
-          )}
-        </button>
-      </div>
-    </div>
-  );
-
   return (
     <Modal title="Change Password" onClose={onClose}>
-      {alert && <Alert type={alert.type} message={alert.message} />}
-
+      {alert && (
+        <div
+          className={`p-3 rounded-md mb-4 flex items-center gap-2 ${
+            alert.type === "success" ? "bg-green-50 text-green-700" : "bg-red-50 text-red-700"
+          }`}
+        >
+          <span className="text-sm">{alert.message}</span>
+        </div>
+      )}
       <form onSubmit={handleSubmit}>
         <div className="space-y-4">
-          <PasswordInput
-            label="Current Password"
-            name="currentPassword"
-            placeholder="Enter your current password"
-          />
-          <PasswordInput
-            label="New Password"
-            name="newPassword"
-            placeholder="Create a new password"
-          />
-          <PasswordInput
-            label="Confirm New Password"
-            name="confirmPassword"
-            placeholder="Confirm your new password"
-          />
+          {/* Current Password */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Current Password
+            </label>
+            <div className="relative">
+              <input
+                type={showPassword.current ? "text" : "password"}
+                name="currentPassword"
+                placeholder="Enter your current password"
+                value={formData.currentPassword}
+                onChange={handleChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md pr-10 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                required
+              />
+              <span 
+                className="absolute right-3 top-2.5 text-gray-400 hover:text-gray-600 cursor-pointer"
+                onClick={() => setShowPassword(prev => ({...prev, current: !prev.current}))}
+              >
+                {showPassword.current ? <Eye className="w-5 h-5" /> : <EyeOff className="w-5 h-5" />}
+              </span>
+            </div>
+          </div>
+          
+          {/* New Password */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              New Password
+            </label>
+            <div className="relative">
+              <input
+                type={showPassword.new ? "text" : "password"}
+                name="newPassword"
+                placeholder="Create a new password"
+                value={formData.newPassword}
+                onChange={handleChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md pr-10 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                required
+              />
+              <span 
+                className="absolute right-3 top-2.5 text-gray-400 hover:text-gray-600 cursor-pointer"
+                onClick={() => setShowPassword(prev => ({...prev, new: !prev.new}))}
+              >
+                {showPassword.new ? <Eye className="w-5 h-5" /> : <EyeOff className="w-5 h-5" />}
+              </span>
+            </div>
+          </div>
+          
+          {/* Confirm Password */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Confirm New Password
+            </label>
+            <div className="relative">
+              <input
+                type={showPassword.confirm ? "text" : "password"}
+                name="confirmPassword"
+                placeholder="Confirm your new password"
+                value={formData.confirmPassword}
+                onChange={handleChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md pr-10 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                required
+              />
+              <span 
+                className="absolute right-3 top-2.5 text-gray-400 hover:text-gray-600 cursor-pointer"
+                onClick={() => setShowPassword(prev => ({...prev, confirm: !prev.confirm}))}
+              >
+                {showPassword.confirm ? <Eye className="w-5 h-5" /> : <EyeOff className="w-5 h-5" />}
+              </span>
+            </div>
+          </div>
         </div>
-
+        
         <div className="flex justify-end gap-3 mt-6">
           <button
             type="button"

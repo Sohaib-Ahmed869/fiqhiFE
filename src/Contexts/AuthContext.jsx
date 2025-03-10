@@ -29,7 +29,6 @@ export const AuthProvider = ({ children }) => {
         setLoading(false);
         return;
       }
-
       try {
         setLoading(true);
         // Replace with your actual endpoint to get user profile
@@ -39,8 +38,6 @@ export const AuthProvider = ({ children }) => {
       } catch (err) {
         console.error("Failed to load user", err);
         toast.error(err.response?.data?.error || "Failed to load user profile");
-
-        // Clear token if it's invalid
         if (err.response?.status === 401) {
           setToken(null);
         }
@@ -48,24 +45,37 @@ export const AuthProvider = ({ children }) => {
         setLoading(false);
       }
     };
-
     loadUser();
   }, [token]);
 
-  // Login function
   const login = async (email, password, remember = false) => {
     try {
       setLoading(true);
+      console.log("Attempting login with:", email);
+      
       const res = await api.post("/auth/login", { email, password });
-
-      setToken(res.data.token);
-      localStorage.setItem("role", res.data.role);
-
-      // If "remember for 30 days" is checked, we could set a longer expiry
-      // on the token in localStorage, but that's handled server-side
-
-      return true;
+      if (res.data && res.data.token) {
+        // Store the token
+        setToken(res.data.token);
+        
+        // Store the entire user object
+        if (res.data.user) {
+          localStorage.setItem("user", JSON.stringify(res.data.user));
+          
+          // Also store role separately for backward compatibility
+          localStorage.setItem("role", res.data.user.role);
+        } else {
+          console.error("User data missing from login response");
+        }
+        
+        toast.success("Login successful!");
+        return true;
+      } else {
+        toast.error("Login failed: Invalid response");
+        return false;
+      }
     } catch (err) {
+      console.error("Login error:", err);
       toast.error(err.response?.data?.error || "Login failed");
       return false;
     } finally {
@@ -78,18 +88,52 @@ export const AuthProvider = ({ children }) => {
     try {
       setLoading(true);
       const res = await api.post("/auth/register", { name, email, password });
-
-      // Auto-login after registration if the API provides a token
-      if (res.data.token) {
-        setToken(res.data.token);
+      if (res.data.success) {
+        toast.success("Registration successful!");
+        return { success: true, user: res.data.user };
+      } else {
+        toast.error(res.data.error || "Registration failed");
+        return { success: false, message: res.data.error || "Registration failed" };
       }
-
-      return { success: true, data: res.data };
     } catch (err) {
       toast.error(err.response?.data?.error || "Registration failed");
       return {
         success: false,
-        error: err.response?.data?.error || "Registration failed",
+        message: err.response?.data?.error || "Registration failed",
+      };
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Forgot Password function
+  const forgotPassword = async (email) => {
+    try {
+      setLoading(true);
+      const res = await api.post("/auth/forgotpassword", { email });
+      return { success: true, message: res.data.data };
+    } catch (err) {
+      toast.error(err.response?.data?.error || "Failed to send reset link");
+      return {
+        success: false,
+        error: err.response?.data?.error || "Failed to send reset link",
+      };
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Reset Password function
+  const resetPassword = async (password, resetToken) => {
+    try {
+      setLoading(true);
+      const res = await api.put(`/auth/resetpassword/${resetToken}`, { password });
+      return { success: true, message: res.data.data };
+    } catch (err) {
+      toast.error(err.response?.data?.error || "Failed to update password");
+      return {
+        success: false,
+        error: err.response?.data?.error || "Failed to update password",
       };
     } finally {
       setLoading(false);
@@ -100,6 +144,9 @@ export const AuthProvider = ({ children }) => {
   const logout = () => {
     setToken(null);
     setCurrentUser(null);
+    localStorage.removeItem("user");
+    localStorage.removeItem("role");
+    localStorage.removeItem("token");
   };
 
   // Check if user is authenticated
@@ -117,10 +164,12 @@ export const AuthProvider = ({ children }) => {
     token,
     login,
     register,
+    forgotPassword,
+    resetPassword, 
     logout,
     isAuthenticated,
     hasRole,
-    setError, // Expose error setter to clear errors
+    setError,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

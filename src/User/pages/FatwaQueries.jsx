@@ -294,7 +294,7 @@ const ViewQueryModal = ({ query, onClose, onSubmitFeedback }) => {
             <h5 className="font-medium text-gray-900">Response:</h5>
             <p className="mt-2 text-gray-600">{query.answer}</p>
             <p className="mt-4 text-right text-sm text-gray-500">
-              - {query.answeredBy?.name || "Shaykh"}
+              - {query.answeredBy?.username || "Shaykh"}
             </p>
           </div>
         )}
@@ -373,9 +373,8 @@ const FatwaQueries = () => {
     const fetchQueries = async () => {
       try {
         setLoading(true);
-
         let endpoint = "/fatwas";
-
+  
         // If user is logged in, get appropriate queries
         if (isAuthenticated()) {
           if (currentUser.role === "user") {
@@ -386,17 +385,16 @@ const FatwaQueries = () => {
             }
           }
         }
-
+  
         const response = await api.get(endpoint);
-
-        // Filter based on selected tab
+        console.log("Fetched Queries Response:", response.data); // Log the raw response
         let filteredQueries = response.data.fatwas;
+  
+        // Filter based on selected tab
         if (selectedTab !== "all") {
-          filteredQueries = filteredQueries.filter(
-            (q) => q.status === selectedTab
-          );
+          filteredQueries = filteredQueries.filter((q) => q.status === selectedTab);
         }
-
+  
         // Filter based on search query if present
         if (searchQuery) {
           const query = searchQuery.toLowerCase();
@@ -406,7 +404,7 @@ const FatwaQueries = () => {
               q.question.toLowerCase().includes(query)
           );
         }
-
+  
         setQueries(filteredQueries);
       } catch (err) {
         setError("Failed to load fatwa queries");
@@ -415,9 +413,10 @@ const FatwaQueries = () => {
         setLoading(false);
       }
     };
-
+  
     fetchQueries();
   }, [selectedTab, searchQuery, currentUser, isAuthenticated]);
+  
 
   const handleCreateFatwa = async (formData) => {
     try {
@@ -595,13 +594,13 @@ const FatwaQueries = () => {
                       <p>{formatDate(query.createdAt)}</p>
                     </div>
                     <div>
-                      <p className="text-xs text-gray-500">Assigned To</p>
-                      <p>
-                        {query.assignedTo?.name ||
-                          (query.status === "pending"
-                            ? "Unassigned"
-                            : "Shaykh")}
-                      </p>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {query.status === "pending"
+                        ? "Unassigned"
+                        : query.assignedTo?.username || "No name found"}
+                    </td>
+
+
                     </div>
                   </div>
 
@@ -684,11 +683,12 @@ const FatwaQueries = () => {
                           <StatusBadge status={query.status} />
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {query.assignedTo?.name ||
-                            (query.status === "pending"
-                              ? "Unassigned"
-                              : "Shaykh")}
+                          {query.status === "pending"
+                            ? "Unassigned"
+                            : query.assignedTo?.username || "No name found"}
                         </td>
+
+
                         <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                           <button
                             onClick={() => handleViewQuery(query)}

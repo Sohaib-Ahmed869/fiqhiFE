@@ -357,6 +357,7 @@ const AddMarriageModal = ({ onClose, onSuccess }) => {
                           onChange={(e) =>
                             handleChange(e, "partnerOne", "dateOfBirth")
                           }
+                          max={new Date().toISOString().split("T")[0]} 
                           className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
                           required
                         />
@@ -455,6 +456,7 @@ const AddMarriageModal = ({ onClose, onSuccess }) => {
                           onChange={(e) =>
                             handleChange(e, "partnerTwo", "dateOfBirth")
                           }
+                          max={new Date().toISOString().split("T")[0]} 
                           className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
                           required
                         />
@@ -531,6 +533,7 @@ const AddMarriageModal = ({ onClose, onSuccess }) => {
                           name="preferredDate"
                           value={formData.preferredDate}
                           onChange={handleChange}
+                          min={new Date().toISOString().split("T")[0]}  
                           className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
                           required
                         />
@@ -574,6 +577,7 @@ const AddMarriageModal = ({ onClose, onSuccess }) => {
                           name="marriageDate"
                           value={formData.marriageDate}
                           onChange={handleChange}
+                          min={new Date().toISOString().split("T")[0]} 
                           className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
                           required
                         />

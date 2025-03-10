@@ -2,10 +2,9 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import logo from "../assets/logo.png";
-import google from "../assets/google.png";
-import apple from "../assets/apple.png";
 import { useAuth } from "../Contexts/AuthContext";
 import { toast } from "react-toastify";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -13,6 +12,8 @@ const Login = () => {
   const [remember, setRemember] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { login, error, setError } = useAuth();
+    const [showPassword, setShowPassword] = useState(false);
+  
   const navigate = useNavigate();
 
   // Clear error when component mounts or when fields change
@@ -20,29 +21,40 @@ const Login = () => {
     setError(null);
   }, [email, password, setError]);
 
+  const togglePasswordVisibility = () => {
+    setShowPassword((prev) => !prev);
+  };
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+  
     if (!email || !password) {
       toast.error("Please fill in all fields");
       return;
     }
-
+  
     setIsSubmitting(true);
     const success = await login(email, password, remember);
-
+  
     if (success) {
-      //get user role and redirect to appropriate dashboard
-      const userRole = localStorage.getItem("role");
-      if (userRole === "admin") {
-        navigate("/admin");
-      } else if (userRole === "shaykh") {
-        navigate("/shaykh");
+      // Get user data from localStorage
+      const userData = JSON.parse(localStorage.getItem("user"));
+      
+      // Navigate based on user role
+      if (userData && userData.role) {
+        if (userData.role === "admin") {
+          navigate("/admin");
+        } else if (userData.role === "shaykh") {
+          navigate("/shaykh");
+        } else {
+          navigate("/user");
+        }
       } else {
-        navigate("/user");
+        // Fallback if user data or role is missing
+        console.error("User role not found in localStorage");
+        navigate("/user"); // Default to user portal
       }
     }
-
+  
     setIsSubmitting(false);
   };
 
@@ -80,15 +92,22 @@ const Login = () => {
             />
           </div>
 
-          <div>
+          <div className="relative">
             <input
-              type="password"
+              type={showPassword ? "text" : "password"}
               placeholder="Password"
-              className="input input-bordered w-full bg-white"
+              className="input input-bordered w-full bg-white pr-16"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
             />
+            <button
+              type="button"
+              onClick={togglePasswordVisibility}
+              className="absolute right-6 top-1/2 transform -translate-y-1/2 text-xl text-grey-600 focus:outline-none"
+            >
+              {showPassword ? <FaEye /> : <FaEyeSlash />}
+            </button>
           </div>
 
           <div className="flex items-center justify-between">
@@ -105,7 +124,7 @@ const Login = () => {
               </label>
             </div>
             <Link
-              to="/forgot-password"
+              to="/forgotpassword"
               className="text-sm text-blue-600 hover:underline"
             >
               Forgot password

@@ -1,11 +1,9 @@
-// SignUp.jsx
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 import logo from "../assets/logo.png";
-import google from "../assets/google.png";
-import apple from "../assets/apple.png";
-import { useAuth } from "../Contexts/AuthContext"; // Assuming you have an AuthContext like in Login
-import { toast } from "react-toastify";
+import { useAuth } from "../Contexts/AuthContext";
+
 const SignUp = () => {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -13,13 +11,19 @@ const SignUp = () => {
   const [agreeTerms, setAgreeTerms] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState(null);
+  const [showPassword, setShowPassword] = useState(false);
+  
   const navigate = useNavigate();
-  const { register } = useAuth(); // Assuming your AuthContext provides a register function
+  const { register } = useAuth();
 
   // Clear error when component mounts or when fields change
   React.useEffect(() => {
     setError(null);
   }, [name, email, password]);
+
+  const togglePasswordVisibility = () => {
+    setShowPassword((prev) => !prev);
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -37,11 +41,11 @@ const SignUp = () => {
 
     try {
       setIsSubmitting(true);
-      console.log(name, email, password);
-      const success = await register(name, email, password);
-
-      if (success === true) {
-        navigate("/login"); // Redirect to login after successful registration
+      const response = await register(name, email, password);
+      if (response.success) {
+        navigate("/login"); 
+      } else {
+        setError(response.message || "Registration failed");
       }
     } catch (err) {
       setError(err.message || "Registration failed. Please try again.");
@@ -94,15 +98,22 @@ const SignUp = () => {
             />
           </div>
 
-          <div>
+          <div className="relative">
             <input
-              type="password"
+              type={showPassword ? "text" : "password"}
               placeholder="Password"
-              className="input input-bordered w-full bg-white"
+              className="input input-bordered w-full bg-white pr-16"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
             />
+            <button
+              type="button"
+              onClick={togglePasswordVisibility}
+              className="absolute right-6 top-1/2 transform -translate-y-1/2 text-xl text-grey-600 focus:outline-none"
+            >
+              {showPassword ? <FaEye /> : <FaEyeSlash />}
+            </button>
           </div>
 
           <div className="flex items-center">
@@ -126,21 +137,6 @@ const SignUp = () => {
             {isSubmitting ? "Creating Account..." : "Signup"}
           </button>
         </form>
-
-        {/* <div className="text-center text-sm text-gray-500">Or</div> */}
-
-        {/* Social Login
-        <div className="space-y-3">
-          <button className="btn btn-outline w-full normal-case">
-            <img src={google} alt="Google" className="w-5 h-5 mr-2" />
-            Sign up with Google
-          </button>
-
-          <button className="btn btn-outline w-full normal-case">
-            <img src={apple} alt="Apple" className="w-5 h-5 mr-2" />
-            Sign up with Apple
-          </button>
-        </div> */}
 
         <div className="text-center text-sm">
           Have an account?{" "}

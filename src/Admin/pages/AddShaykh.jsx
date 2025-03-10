@@ -19,17 +19,124 @@ const AddShaykh = () => {
     phoneNumber: "",
     address: "",
   });
+  
+  // Form validation errors
+  const [validationErrors, setValidationErrors] = useState({
+    firstName: "",
+    lastName: "",
+    email: "",
+    password: "",
+    phoneNumber: "",
+  });
 
   const handleChange = (e) => {
     const { name, value } = e.target;
+    
+    // Clear previous validation error when field is edited
+    setValidationErrors({
+      ...validationErrors,
+      [name]: ""
+    });
+    
+    // Update form data
     setFormData({
       ...formData,
       [name]: value,
     });
+    
+    // Validate fields as user types
+    validateField(name, value);
+  };
+  
+  // Field validation function
+  const validateField = (name, value) => {
+    let error = "";
+    
+    switch (name) {
+      case "firstName":
+      case "lastName":
+        // Only allow letters, spaces, hyphens and apostrophes in names
+        if (!/^[A-Za-z\s'-]*$/.test(value)) {
+          error = "Name should only contain letters, spaces, hyphens and apostrophes";
+        }
+        break;
+        
+      case "email":
+        // Basic email validation
+        if (value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+          error = "Please enter a valid email address";
+        }
+        break;
+        
+      case "password":
+        // Password should be at least 6 characters
+        if (value && value.length < 6) {
+          error = "Password should be at least 6 characters long";
+        }
+        break;
+        
+      case "phoneNumber":
+        // Phone should only contain numbers, plus sign, spaces, parentheses and hyphens
+        if (!/^[0-9+\s()-]*$/.test(value)) {
+          error = "Phone number should only contain digits, +, spaces, parentheses and hyphens";
+        }
+        break;
+        
+      case "yearsOfExperience":
+        // Ensure years is a positive number
+        if (value && (isNaN(value) || parseInt(value) < 0)) {
+          error = "Years of experience must be a positive number";
+        }
+        break;
+        
+      default:
+        break;
+    }
+    
+    // Update validation errors
+    setValidationErrors({
+      ...validationErrors,
+      [name]: error
+    });
+    
+    return error === "";
+  };
+
+  const validateForm = () => {
+    // Validate all fields
+    let isValid = true;
+    let newErrors = {};
+    
+    // Check required fields and validate each field
+    Object.keys(formData).forEach(key => {
+      // First check if empty for required fields
+      if (["firstName", "lastName", "email", "password", "phoneNumber", "address", "yearsOfExperience", "educationalInstitution"].includes(key) && !formData[key]) {
+        newErrors[key] = "This field is required";
+        isValid = false;
+      } else {
+        // If not empty, validate the field
+        const fieldValid = validateField(key, formData[key]);
+        if (!fieldValid) {
+          isValid = false;
+          // Keep existing error message from validateField
+          newErrors[key] = validationErrors[key];
+        }
+      }
+    });
+    
+    setValidationErrors(newErrors);
+    return isValid;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    // Validate form before submission
+    if (!validateForm()) {
+      setError("Please correct the validation errors before submitting");
+      return;
+    }
+    
     setLoading(true);
     setError(null);
     setSuccess(false);
@@ -157,8 +264,11 @@ const AddShaykh = () => {
                     onChange={handleChange}
                     placeholder="First name"
                     required
-                    className="w-full rounded-md border border-gray-300 shadow-sm px-4 py-2 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-sm"
+                    className={`w-full rounded-md border ${validationErrors.firstName ? 'border-red-500' : 'border-gray-300'} shadow-sm px-4 py-2 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-sm`}
                   />
+                  {validationErrors.firstName && (
+                    <p className="mt-1 text-sm text-red-600">{validationErrors.firstName}</p>
+                  )}
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -171,8 +281,11 @@ const AddShaykh = () => {
                     onChange={handleChange}
                     placeholder="Last name"
                     required
-                    className="w-full rounded-md border border-gray-300 shadow-sm px-4 py-2 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-sm"
+                    className={`w-full rounded-md border ${validationErrors.lastName ? 'border-red-500' : 'border-gray-300'} shadow-sm px-4 py-2 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-sm`}
                   />
+                  {validationErrors.lastName && (
+                    <p className="mt-1 text-sm text-red-600">{validationErrors.lastName}</p>
+                  )}
                 </div>
               </div>
 
@@ -189,8 +302,11 @@ const AddShaykh = () => {
                     onChange={handleChange}
                     placeholder="email@example.com"
                     required
-                    className="w-full rounded-md border border-gray-300 shadow-sm px-4 py-2 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-sm"
+                    className={`w-full rounded-md border ${validationErrors.email ? 'border-red-500' : 'border-gray-300'} shadow-sm px-4 py-2 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-sm`}
                   />
+                  {validationErrors.email && (
+                    <p className="mt-1 text-sm text-red-600">{validationErrors.email}</p>
+                  )}
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -203,8 +319,11 @@ const AddShaykh = () => {
                     onChange={handleChange}
                     placeholder="Create a password"
                     required
-                    className="w-full rounded-md border border-gray-300 shadow-sm px-4 py-2 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-sm"
+                    className={`w-full rounded-md border ${validationErrors.password ? 'border-red-500' : 'border-gray-300'} shadow-sm px-4 py-2 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-sm`}
                   />
+                  {validationErrors.password && (
+                    <p className="mt-1 text-sm text-red-600">{validationErrors.password}</p>
+                  )}
                 </div>
               </div>
 
@@ -222,8 +341,11 @@ const AddShaykh = () => {
                     placeholder="3"
                     required
                     min="0"
-                    className="w-full rounded-md border border-gray-300 shadow-sm px-4 py-2 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-sm"
+                    className={`w-full rounded-md border ${validationErrors.yearsOfExperience ? 'border-red-500' : 'border-gray-300'} shadow-sm px-4 py-2 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-sm`}
                   />
+                  {validationErrors.yearsOfExperience && (
+                    <p className="mt-1 text-sm text-red-600">{validationErrors.yearsOfExperience}</p>
+                  )}
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -237,8 +359,11 @@ const AddShaykh = () => {
                     onChange={handleChange}
                     placeholder="Institution name"
                     required
-                    className="w-full rounded-md border border-gray-300 shadow-sm px-4 py-2 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-sm"
+                    className={`w-full rounded-md border ${validationErrors.educationalInstitution ? 'border-red-500' : 'border-gray-300'} shadow-sm px-4 py-2 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-sm`}
                   />
+                  {validationErrors.educationalInstitution && (
+                    <p className="mt-1 text-sm text-red-600">{validationErrors.educationalInstitution}</p>
+                  )}
                 </div>
               </div>
 
@@ -263,9 +388,12 @@ const AddShaykh = () => {
                     onChange={handleChange}
                     placeholder="+61 (555) 000-0000"
                     required
-                    className="flex-1 rounded-r-md border border-gray-300 shadow-sm px-4 py-2 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-sm"
+                    className={`flex-1 rounded-r-md border ${validationErrors.phoneNumber ? 'border-red-500' : 'border-gray-300'} shadow-sm px-4 py-2 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-sm`}
                   />
                 </div>
+                {validationErrors.phoneNumber && (
+                  <p className="mt-1 text-sm text-red-600">{validationErrors.phoneNumber}</p>
+                )}
               </div>
 
               {/* Address */}
@@ -279,9 +407,12 @@ const AddShaykh = () => {
                   onChange={handleChange}
                   rows={3}
                   required
-                  className="w-full rounded-md border border-gray-300 shadow-sm px-4 py-2 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-sm"
+                  className={`w-full rounded-md border ${validationErrors.address ? 'border-red-500' : 'border-gray-300'} shadow-sm px-4 py-2 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-sm`}
                   placeholder="Full address"
                 />
+                {validationErrors.address && (
+                  <p className="mt-1 text-sm text-red-600">{validationErrors.address}</p>
+                )}
               </div>
 
               {/* Submit Button */}

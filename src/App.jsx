@@ -4,6 +4,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import AuthLayout from "./Auth/authLayout";
 import SignUp from "./Auth/signup";
 import Login from "./Auth/login";
+import ForgotPassword from "./Auth/ForgotPassword"
 import UserLayout from "./layouts/UserLayout";
 import NewApplication from "./User/pages/NewApplication";
 import FatwaQueries from "./User/pages/FatwaQueries";
@@ -24,7 +25,7 @@ import MarriageApplicationViewS from "./Shaykh/pages/Marriage/details";
 import ShaykhSchedule from "./Shaykh/pages/schedule";
 import NotificationsScreen from "./Shaykh/pages/notifications";
 import UserProfile from "./Shaykh/pages/profile";
-
+import ResetPassword from "./Auth/ResetPassword"
 import AdminLayout from "./Admin/Layout";
 import AddShaykh from "./Admin/pages/AddShaykh";
 import FatwaApplications from "./Admin/pages/Fatwa";
@@ -49,6 +50,9 @@ function App() {
             <Route path="/" element={<Navigate to="/login" replace />} />
             <Route path="/signup" element={<SignUp />} />
             <Route path="/login" element={<Login />} />
+            <Route path="/forgotpassword" element={<ForgotPassword />} />
+            <Route path="/resetpassword/:resetToken" element={<ResetPassword />} />
+
           </Route>
           <Route path="/user" element={<UserLayout />}>
             <Route path="" element={<NewApplication />} />

@@ -351,7 +351,6 @@ const AdminDashboard = () => {
                     </div>
                   </div>
                   <div className="text-xs text-gray-500 flex flex-col items-end">
-                    <span>{shaykh.location || "Sydney"}</span>
                     <span className="mt-1">
                       {shaykh.assignedCases} active cases
                     </span>
