@@ -1427,18 +1427,9 @@ const ShaykhMarriageView = () => {
                   </ul>
                 ) : (
                   <ul className="text-sm text-blue-800 list-disc pl-5 space-y-2">
-                    <li>Review the marriage certificate application details</li>
                     <li>
-                      Upload the completed certificate using the "Upload
-                      Certificate" button
-                    </li>
-                    <li>Ensure you provide a valid certificate number</li>
-                    <li>
-                      Use the Communication section to request any missing
-                      information
-                    </li>
-                    <li>
-                      Complete the application when the certificate is uploaded
+                      Communicate in the communication section with the admin to
+                      generate the certificate
                     </li>
                   </ul>
                 )}
