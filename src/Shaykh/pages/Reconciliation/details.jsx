@@ -1276,16 +1276,16 @@ const ShaykhReconciliationDetail = () => {
                         <div className="flex justify-between items-start mb-2">
                           <div className="flex items-center">
                             <div className="h-8 w-8 bg-gray-200 rounded-full flex items-center justify-center text-gray-600 font-medium mr-2">
-                              {item.user.firstName
-                                ? item.user.firstName.charAt(0)
-                                : item.user.username.charAt(0)}
+                              {item.user?.firstName
+                                ? item.user?.firstName.charAt(0)
+                                : item.user?.username.charAt(0)}
                             </div>
                             <div>
                               <p className="text-sm font-medium">
-                                {item.user.firstName || item.user.username}
-                                {item.user.role && (
+                                {item.user?.firstName || item.user?.username}
+                                {item.user?.role && (
                                   <span className="text-xs text-gray-500 ml-2">
-                                    ({item.user.role})
+                                    ({item.user?.role})
                                   </span>
                                 )}
                               </p>
